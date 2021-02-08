@@ -1,0 +1,48 @@
+version: "3.5"
+
+services:
+  web:
+    build: ./docker/${PHP_VERSION}
+    container_name: ${PROJECT_NAME}_web
+    volumes:
+      - .:/var/www/html
+      - ./config/php.conf.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./config/sites/:/etc/apache2/sites-enabled
+    ports:
+      - ${PORTS_PHP}
+
+  db:
+    image: ${MYSQL_VERSION}
+    container_name: ${PROJECT_NAME}_mysql
+    volumes:
+      - ./db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+  adminer:
+    image: adminer
+    container_name: ${PROJECT_NAME}_adminer
+    restart: always
+    ports:
+      - ${PORTS_ADM}
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ${PROJECT_NAME}_mail
+    restart: always
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+  composer:
+    image: composer
+    container_name: ${PROJECT_NAME}_composer
+    restart: "no"
+    working_dir: /app
+    volumes:
+      - ./bedrock:/app
